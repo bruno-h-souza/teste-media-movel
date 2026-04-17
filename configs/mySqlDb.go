@@ -4,11 +4,13 @@ import (
 	"database/sql"
 	"fmt"
 	"teste-media-movel/internal/utils"
+
+	_ "github.com/go-sql-driver/mysql" // Driver do MySQL
 )
 
-var DbConnMySql *sql.DB
+// var DbConnMySql *sql.DB
 
-func NewMySqlConnection() error {
+func NewMySqlConnection() (*sql.DB, error) {
 	dbUser := utils.GetEnv("DB_USER", "root")
 	dbPass := utils.GetEnv("DB_PASSWORD", "secret")
 	dbHost := utils.GetEnv("DB_HOST", "localhost")
@@ -18,13 +20,11 @@ func NewMySqlConnection() error {
 
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if err = db.Ping(); err != nil {
-		return err
+		return nil, err
 	}
 
-	DbConnMySql = db
-
-	return nil
+	return db, nil
 }
