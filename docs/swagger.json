@@ -1,0 +1,100 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "API para consulta de Médias Móveis Simples de criptomoedas (BTC e ETH).",
+        "title": "API de Médias Móveis (MMS)",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/",
+    "paths": {
+        "/{pair}/mms": {
+            "get": {
+                "description": "Calcula e retorna a MMS (20, 50 ou 200) para um par de criptomoeda específico dentro de um período.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "mms"
+                ],
+                "summary": "Retorna a Média Móvel Simples (MMS)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Par de moedas (BRLBTC ou BRLETH)",
+                        "name": "pair",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Timestamp inicial (Unix)",
+                        "name": "from",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Timestamp final (Unix)",
+                        "name": "to",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Período da MMS (20, 50, 200)",
+                        "name": "range",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.MMSResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "models.MMSResponse": {
+            "type": "object",
+            "properties": {
+                "mms": {
+                    "type": "number"
+                },
+                "timestamp": {
+                    "type": "integer"
+                }
+            }
+        }
+    }
+}

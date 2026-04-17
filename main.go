@@ -15,8 +15,18 @@ import (
 	"teste-media-movel/internal/repository"
 	"teste-media-movel/internal/service"
 	"teste-media-movel/internal/utils"
+
+	_ "teste-media-movel/docs"
+
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
+// @title           API de Médias Móveis (MMS)
+// @version         1.0
+// @description     API para consulta de Médias Móveis Simples de criptomoedas (BTC e ETH).
+// @host            localhost:8080
+// @BasePath        /
 func main() {
 	// Flag para definir o modo de execução da aplicação
 	mode := flag.String("mode", "api", "Modo de execução: 'api' ou 'job'")
@@ -43,7 +53,7 @@ func main() {
 	}
 }
 
-// runJob executa a rotina de buscar dados da API do Mercado Bitcoin e salvar no banco de dados
+// runJob executa a rotina de buscar dados da API do Mercado Bitcoin e salvá-los no banco
 func runJob(svc services.MarketIndicatorService) {
 	ctx := context.Background()
 
@@ -82,6 +92,9 @@ func runAPI(svc services.MarketIndicatorService) {
 	// Inicializa e registra os endpoints do handler de indicadores
 	handler := httphandler.NewIndicatorHandler(svc)
 	handler.RegisterRoutes(router)
+
+	// Rota do Swagger
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	port := utils.GetEnv("PORT", "8080")
 	log.Printf("Servidor API iniciado e escutando na porta %s...", port)

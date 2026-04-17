@@ -1,0 +1,69 @@
+basePath: /
+definitions:
+  models.MMSResponse:
+    properties:
+      mms:
+        type: number
+      timestamp:
+        type: integer
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: API para consulta de Médias Móveis Simples de criptomoedas (BTC e ETH).
+  title: API de Médias Móveis (MMS)
+  version: "1.0"
+paths:
+  /{pair}/mms:
+    get:
+      description: Calcula e retorna a MMS (20, 50 ou 200) para um par de criptomoeda
+        específico dentro de um período.
+      parameters:
+      - description: Par de moedas (BRLBTC ou BRLETH)
+        in: path
+        name: pair
+        required: true
+        type: string
+      - description: Timestamp inicial (Unix)
+        in: query
+        name: from
+        required: true
+        type: integer
+      - description: Timestamp final (Unix)
+        in: query
+        name: to
+        required: true
+        type: integer
+      - description: Período da MMS (20, 50, 200)
+        in: query
+        name: range
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.MMSResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Retorna a Média Móvel Simples (MMS)
+      tags:
+      - mms
+swagger: "2.0"

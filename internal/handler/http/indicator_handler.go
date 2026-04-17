@@ -21,6 +21,20 @@ func (h *IndicatorHandler) RegisterRoutes(r *gin.Engine) {
 	r.GET("/:pair/mms", h.GetMMS)
 }
 
+// GetMMS godoc
+// @Summary      Retorna a Média Móvel Simples (MMS)
+// @Description  Calcula e retorna a MMS (20, 50 ou 200) para um par de criptomoeda específico dentro de um período.
+// @Tags         mms
+// @Produce      json
+// @Param        pair   path      string  true  "Par de moedas (BRLBTC ou BRLETH)"
+// @Param        from   query     int     true  "Timestamp inicial (Unix)"
+// @Param        to     query     int     true  "Timestamp final (Unix)"
+// @Param        range  query     int     true  "Período da MMS (20, 50, 200)"
+// @Success      200    {array}   models.MMSResponse
+// @Failure      400    {object}  map[string]interface{}
+// @Failure      404    {object}  map[string]interface{}
+// @Failure      500    {object}  map[string]interface{}
+// @Router       /{pair}/mms [get]
 func (h *IndicatorHandler) GetMMS(c *gin.Context) {
 	pairStr := c.Param("pair")
 	toStr := c.Query("to")
