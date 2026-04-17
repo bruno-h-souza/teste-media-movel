@@ -52,6 +52,7 @@ func (s *marketIndicatorService) SyncIndicators(ctx context.Context) error {
 			candles, err := s.mbRepo.GetCandles(ctx, symbol, Resolution, from, to)
 			if err != nil {
 				log.Printf("  Falha ao buscar candles para %s neste período: %v", symbol, err)
+				return err
 			} else {
 				log.Printf("  %d registros encontrados. Iniciando salvamento...", len(candles))
 				for _, candle := range candles {

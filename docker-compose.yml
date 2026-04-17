@@ -7,7 +7,7 @@ services:
     container_name: mysql_db
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: admin#2026
       MYSQL_DATABASE: mmsdb
     ports:
       - "3306:3306"
@@ -21,21 +21,21 @@ services:
       retries: 10
 
   # Container da nossa API em Go
-  api:
-    build: .
-    container_name: go_mms_teste_api
-    restart: always
-    ports:
-      - "8080:8080"
-    environment:
-      - DB_USER=root
-      - DB_PASSWORD=secret
-      - DB_HOST=db
-      - DB_PORT=3306
-      - DB_NAME=usersdb
-    depends_on:
-      db:
-        condition: service_healthy
+  # api:
+  #   build: .
+  #   container_name: go_mms_teste_api
+  #   restart: always
+  #   ports:
+  #     - "8080:8080"
+  #   environment:
+  #     - DB_USER=root
+  #     - DB_PASSWORD=secret
+  #     - DB_HOST=db
+  #     - DB_PORT=3306
+  #     - DB_NAME=usersdb
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
 
 volumes:
   mysql_data:

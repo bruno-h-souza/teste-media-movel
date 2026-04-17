@@ -4,6 +4,8 @@ import (
 	"context"
 	"flag"
 	"log"
+	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 
@@ -41,12 +43,36 @@ func main() {
 	}
 }
 
-// runJob executa a rotina de buscar dados da API do Mercado Bitcoin e salvá-los no banco
+// runJob executa a rotina de buscar dados da API do Mercado Bitcoin e salvar no banco de dados
 func runJob(svc services.MarketIndicatorService) {
 	ctx := context.Background()
-	if err := svc.SyncIndicators(ctx); err != nil {
-		log.Printf("Erro na execução do Job: %v", err)
+
+	maxRetriesStr := utils.GetEnv("JOB_MAX_RETRIES", "3")
+	timeoutSecondsStr := utils.GetEnv("JOB_RETRY_TIMEOUT_SECONDS", "2")
+
+	maxRetries, err := strconv.Atoi(maxRetriesStr)
+	if err != nil {
+		maxRetries = 3
 	}
+
+	timeoutSeconds, err := strconv.Atoi(timeoutSecondsStr)
+	if err != nil {
+		timeoutSeconds = 2
+	}
+
+	for attempt := 1; attempt <= maxRetries+1; attempt++ {
+		if err := svc.SyncIndicators(ctx); err != nil {
+			log.Printf("Erro na execução do Job (tentativa %d/%d): %v", attempt, maxRetries+1, err)
+			if attempt <= maxRetries {
+				log.Printf("Aguardando timeout de %d segundos antes da próxima tentativa...", timeoutSeconds)
+				time.Sleep(time.Duration(timeoutSeconds) * time.Second)
+			}
+		} else {
+			return // Executado com sucesso, o loop encerra
+		}
+	}
+
+	log.Printf("O Job falhou definitivamente após %d tentativas.", maxRetries+1)
 }
 
 // runAPI inicia um servidor web simples para consultar os dados

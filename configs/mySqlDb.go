@@ -12,10 +12,10 @@ import (
 
 func NewMySqlConnection() (*sql.DB, error) {
 	dbUser := utils.GetEnv("DB_USER", "root")
-	dbPass := utils.GetEnv("DB_PASSWORD", "secret")
+	dbPass := utils.GetEnv("DB_PASSWORD", "admin#2026")
 	dbHost := utils.GetEnv("DB_HOST", "localhost")
 	dbPort := utils.GetEnv("DB_PORT", "3306")
-	dbName := utils.GetEnv("DB_NAME", "usersdb")
+	dbName := utils.GetEnv("DB_NAME", "mmsdb")
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true", dbUser, dbPass, dbHost, dbPort, dbName)
 
 	db, err := sql.Open("mysql", dsn)
