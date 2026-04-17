@@ -22,13 +22,18 @@ func (h *IndicatorHandler) RegisterRoutes(r *gin.Engine) {
 }
 
 func (h *IndicatorHandler) GetMMS(c *gin.Context) {
-	pair := c.Param("pair")
+	pairStr := c.Param("pair")
 	toStr := c.Query("to")
 	fromStr := c.Query("from")
 	rangeStr := c.Query("range")
 
-	if pair == "" {
+	if pairStr == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Os parâmetros 'pair' é obrigatório"})
+		return
+	}
+
+	if pairStr != "BRLBTC" && pairStr != "BRLETH" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Parâmetro 'pair' inválido"})
 		return
 	}
 
@@ -49,24 +54,32 @@ func (h *IndicatorHandler) GetMMS(c *gin.Context) {
 
 	toTimestamp, err := strconv.ParseInt(toStr, 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Parâmetro 'timestamp' inválido"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Parâmetro 'to' inválido"})
 		return
 	}
 
 	fromTimestamp, err := strconv.ParseInt(fromStr, 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Parâmetro 'timestamp' inválido"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Parâmetro 'from' inválido"})
 		return
 	}
 
-	indicator, err := h.svc.GetIndicator(c.Request.Context(), pair, timestamp)
+	var pair string
+	switch pairStr {
+	case "BRLBTC":
+		pair = "BTC-BRL"
+	case "BRLETH":
+		pair = "ETH-BRL"
+	}
+
+	indicators, err := h.svc.GetIndicator(c.Request.Context(), pair, fromTimestamp, toTimestamp, rangeStr)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro interno ao buscar indicador"})
 		return
 	}
-	if indicator == nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Indicador não encontrado"})
+	if len(indicators) == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Nenhum indicador encontrado para o período"})
 		return
 	}
-	c.JSON(http.StatusOK, indicator)
+	c.JSON(http.StatusOK, indicators)
 }

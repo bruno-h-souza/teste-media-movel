@@ -7,5 +7,5 @@ import (
 
 type MarketIndicatorService interface {
 	SyncIndicators(ctx context.Context) error
-	GetIndicator(ctx context.Context, pair string, timestampUnix int64) (*models.MarketIndicator, error)
+	GetIndicator(ctx context.Context, pair string, from, to int64, rangeStr string) ([]models.MMSResponse, error)
 }

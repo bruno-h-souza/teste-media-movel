@@ -12,4 +12,5 @@ type MercadoBitcoinRepository interface {
 type MarketIndicatorRepository interface {
 	Save(ctx context.Context, indicator models.MarketIndicator) error
 	GetByPairAndTimestamp(ctx context.Context, pair string, timestampUnix int64) (*models.MarketIndicator, error)
+	GetByPairAndDateRange(ctx context.Context, pair string, from, to int64) ([]models.MarketIndicator, error)
 }

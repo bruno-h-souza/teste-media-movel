@@ -99,16 +99,16 @@ func (s *marketIndicatorService) SyncIndicators(ctx context.Context) error {
 	return nil
 }
 
-// calculateMMS busca os últimos 'days' dias de um par e calcula a Média Móvel Simples (MMS)
+// calculateMMS busca os últimos dias de um par e calcula a Média Móvel Simples (MMS)
 func (s *marketIndicatorService) calculateMMS(ctx context.Context, symbol string, currentTimestamp int64, days int) (*float64, error) {
-	// Data de início: 'days' dias antes da data atual
+	// Data de início: dias antes da data atual
 	from := time.Unix(currentTimestamp, 0).AddDate(0, 0, -days).Unix()
 
 	var candles []models.Candle
 	var err error
 	maxRetries := 3
 
-	// Busca os candles no intervalo com retentativas
+	// Busca os registros no intervalo com retentativas
 	for attempt := 1; attempt <= maxRetries; attempt++ {
 		candles, err = s.mbRepo.GetCandles(ctx, symbol, Resolution, from, currentTimestamp)
 		if err == nil {
@@ -137,6 +137,27 @@ func (s *marketIndicatorService) calculateMMS(ctx context.Context, symbol string
 	return &mms, nil
 }
 
-func (s *marketIndicatorService) GetIndicator(ctx context.Context, pair string, timestampUnix int64) (*models.MarketIndicator, error) {
-	return s.miRepo.GetByPairAndTimestamp(ctx, pair, timestampUnix)
+func (s *marketIndicatorService) GetIndicator(ctx context.Context, pair string, from, to int64, rangeStr string) ([]models.MMSResponse, error) {
+	indicators, err := s.miRepo.GetByPairAndDateRange(ctx, pair, from, to)
+	if err != nil {
+		return nil, err
+	}
+
+	var result []models.MMSResponse
+	for _, ind := range indicators {
+		var mmsValue *float64
+		switch rangeStr {
+		case "20":
+			mmsValue = ind.MMS20
+		case "50":
+			mmsValue = ind.MMS50
+		case "200":
+			mmsValue = ind.MMS200
+		}
+		result = append(result, models.MMSResponse{
+			Timestamp: ind.TimestampUnix,
+			MMS:       mmsValue,
+		})
+	}
+	return result, nil
 }

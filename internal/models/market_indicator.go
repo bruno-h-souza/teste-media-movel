@@ -8,3 +8,8 @@ type MarketIndicator struct {
 	MMS50         *float64
 	MMS200        *float64
 }
+
+type MMSResponse struct {
+	Timestamp int64    `json:"timestamp"`
+	MMS       *float64 `json:"mms"`
+}
