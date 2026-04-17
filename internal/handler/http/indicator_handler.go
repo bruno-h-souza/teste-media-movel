@@ -3,6 +3,7 @@ package httphandler
 import (
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 
@@ -75,6 +76,22 @@ func (h *IndicatorHandler) GetMMS(c *gin.Context) {
 	fromTimestamp, err := strconv.ParseInt(fromStr, 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Parâmetro 'from' inválido"})
+		return
+	}
+
+	now := time.Now()
+	maxDate := now.AddDate(-1, 0, 0)
+
+	toLimit := time.Unix(toTimestamp, 0)
+	fromLimit := time.Unix(fromTimestamp, 0)
+
+	if maxDate.After(toLimit) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Parâmetro 'to' fora do limite suportado"})
+		return
+	}
+
+	if maxDate.After(fromLimit) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Parâmetro 'from'  fora do limite suportado"})
 		return
 	}
 
