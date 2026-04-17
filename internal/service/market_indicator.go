@@ -63,9 +63,27 @@ func (s *marketIndicatorService) SyncIndicators(ctx context.Context) error {
 					}
 
 					if existing == nil {
+						mms20, err := s.calculateMMS(ctx, symbol, candle.Timestamp, 20)
+						if err != nil {
+							log.Printf("Erro ao calcular MMS20 para %s no timestamp %d: %v", symbol, candle.Timestamp, err)
+						}
+
+						mms50, err := s.calculateMMS(ctx, symbol, candle.Timestamp, 50)
+						if err != nil {
+							log.Printf("Erro ao calcular MMS50 para %s no timestamp %d: %v", symbol, candle.Timestamp, err)
+						}
+
+						mms200, err := s.calculateMMS(ctx, symbol, candle.Timestamp, 200)
+						if err != nil {
+							log.Printf("Erro ao calcular MMS200 para %s no timestamp %d: %v", symbol, candle.Timestamp, err)
+						}
+
 						indicator := models.MarketIndicator{
 							Pair:          symbol,
 							TimestampUnix: candle.Timestamp,
+							MMS20:         mms20,
+							MMS50:         mms50,
+							MMS200:        mms200,
 						}
 						if err := s.miRepo.Save(ctx, indicator); err == nil {
 							salvos++
@@ -79,6 +97,44 @@ func (s *marketIndicatorService) SyncIndicators(ctx context.Context) error {
 	}
 	log.Println("Job finalizado com sucesso!")
 	return nil
+}
+
+// calculateMMS busca os últimos 'days' dias de um par e calcula a Média Móvel Simples (MMS)
+func (s *marketIndicatorService) calculateMMS(ctx context.Context, symbol string, currentTimestamp int64, days int) (*float64, error) {
+	// Data de início: 'days' dias antes da data atual
+	from := time.Unix(currentTimestamp, 0).AddDate(0, 0, -days).Unix()
+
+	var candles []models.Candle
+	var err error
+	maxRetries := 3
+
+	// Busca os candles no intervalo com retentativas
+	for attempt := 1; attempt <= maxRetries; attempt++ {
+		candles, err = s.mbRepo.GetCandles(ctx, symbol, Resolution, from, currentTimestamp)
+		if err == nil {
+			break
+		}
+		log.Printf("Falha ao buscar candles para MMS%d de %s (tentativa %d/%d): %v", days, symbol, attempt, maxRetries, err)
+		if attempt < maxRetries {
+			time.Sleep(2 * time.Second)
+		}
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	if len(candles) == 0 {
+		return nil, nil
+	}
+
+	var sum float64
+	for _, c := range candles {
+		sum += c.Close
+	}
+
+	mms := sum / float64(len(candles))
+	return &mms, nil
 }
 
 func (s *marketIndicatorService) GetIndicator(ctx context.Context, pair string, timestampUnix int64) (*models.MarketIndicator, error) {

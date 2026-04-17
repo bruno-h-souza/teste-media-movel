@@ -18,19 +18,42 @@ func NewIndicatorHandler(svc services.MarketIndicatorService) *IndicatorHandler 
 }
 
 func (h *IndicatorHandler) RegisterRoutes(r *gin.Engine) {
-	r.GET("/api/indicator", h.GetIndicator)
+	r.GET("/:pair/mms", h.GetMMS)
 }
 
-func (h *IndicatorHandler) GetIndicator(c *gin.Context) {
-	pair := c.Query("pair")
-	timestampStr := c.Query("timestamp")
+func (h *IndicatorHandler) GetMMS(c *gin.Context) {
+	pair := c.Param("pair")
+	toStr := c.Query("to")
+	fromStr := c.Query("from")
+	rangeStr := c.Query("range")
 
-	if pair == "" || timestampStr == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Os parâmetros 'pair' e 'timestamp' são obrigatórios"})
+	if pair == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Os parâmetros 'pair' é obrigatório"})
 		return
 	}
 
-	timestamp, err := strconv.ParseInt(timestampStr, 10, 64)
+	if toStr == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Os parâmetros 'toStr' é obrigatório"})
+		return
+	}
+
+	if fromStr == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Os parâmetros 'fromStr' é obrigatório"})
+		return
+	}
+
+	if rangeStr == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Os parâmetros 'rangeStr' é obrigatório"})
+		return
+	}
+
+	toTimestamp, err := strconv.ParseInt(toStr, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Parâmetro 'timestamp' inválido"})
+		return
+	}
+
+	fromTimestamp, err := strconv.ParseInt(fromStr, 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Parâmetro 'timestamp' inválido"})
 		return
